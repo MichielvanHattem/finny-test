@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Finny Chat</title>
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="chat-container">
+  <div id="messages" class="messages"></div>
+  <form id="chat-form">
+    <input id="input" autocomplete="off" placeholder="Stel je vraag…" />
+    <button>Verstuur</button>
+  </form>
+</div>
+<script>window.FINNY_TOKEN = localStorage.getItem("finny_token") || "";</script>
+<script src="chat.js"></script>
+</body>
+</html>

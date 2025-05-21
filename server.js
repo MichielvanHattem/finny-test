@@ -8,6 +8,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json());
+// Stel de map 'public' in als plek voor al je statische bestanden (HTML/CSS/JS)
+app.use('/public', express.static('public'));
+
+// Als iemand naar de root ("/") gaat, stuur dan automatisch je chat.html
+app.get('/', (_req, res) => res.sendFile(__dirname + '/public/chat.html'));
 app.use('/public', express.static('public'));
 
 const SECRET = process.env.WP_JWT_SECRET;

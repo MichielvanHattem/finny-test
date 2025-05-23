@@ -1,1 +1,16 @@
+# Node modules
+node_modules/
+
+# Lokale data-output
+parsed/
+
+# Logs
+*.log
+
+# Environment secrets
 .env
+.env.*
+
+# OS / editor files
+.DS_Store
+Thumbs.db

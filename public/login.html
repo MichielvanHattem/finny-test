@@ -1,40 +1,17 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head><meta charset="UTF-8"><title>Finny Login</title>
-<style>
-body { font-family: Arial, sans-serif; padding: 40px; background: #f4f6fa; display: flex; flex-direction: column; align-items: center; }
-form { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.1); width: 100%; max-width: 400px; }
-input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
-button { padding: 12px 20px; background: #0b5394; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.result { margin-top: 20px; white-space: pre-wrap; background: #eef; padding: 10px; border-radius: 6px; width: 100%; }
-</style></head>
-<body>
-<h2>Login op vanhattem.org</h2>
-<form id="loginForm">
-  <input type="text" id="username" placeholder="Gebruikersnaam" required />
-  <input type="password" id="password" placeholder="Wachtwoord" required />
-  <button type="submit">Haal JWT-token op</button>
+
+<!DOCTYPE html><html><body>
+<h1>Login</h1>
+<form id="login">
+<input id="user" placeholder="username"><br>
+<input id="pass" placeholder="password" type="password"><br>
+<button type="submit">Get JWT</button>
 </form>
-<div class="result" id="result"></div>
 <script>
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
+document.getElementById('login').addEventListener('submit',e=>{
   e.preventDefault();
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
-  const res = await fetch("https://www.vanhattem.org/wp-json/jwt-auth/v1/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-  const data = await res.json();
-  const resultDiv = document.getElementById("result");
-  if (data.token) {
-    localStorage.setItem("finny_token", data.token);
-    resultDiv.innerText = "✅ Token opgeslagen. Ga nu naar de chat: /public/chat.html";
-  } else {
-    resultDiv.innerText = "❌ Fout: " + (data.message || "Onbekende fout");
-  }
+  // placeholder
+  localStorage.setItem('finny_token','demo.jwt.token');
+  alert('Token stored (demo)');
 });
 </script>
-</body>
-</html>
+</body></html>

@@ -19,7 +19,8 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   try {
-    const completion = await openai.chat.completions.create({
+    console.log('SYSTEM PROMPT (eerste 120 tekens):', systemPrompt.slice(0, 120));
+const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },

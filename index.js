@@ -7,6 +7,7 @@ const { router: authRouter, requireAuth } = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 
 const app = express();
+app.set('trust proxy', 1);             // ← NEW: pak x-forwarded-proto → https
 app.use(express.json());
 
 app.use(
@@ -21,10 +22,9 @@ app.use(
 app.use('/auth', authRouter);
 app.use('/chat', chatRoutes);
 
-// na succesvolle login meteen het chatscherm tonen
-app.get('/', requireAuth, (_req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'chat.html'));
-});
+app.get('/', requireAuth, (_req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'chat.html'))
+);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`✅ Finny 4.2 draait op poort ${PORT}`));

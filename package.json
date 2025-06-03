@@ -1,0 +1,16 @@
+{
+  "name": "finny-chatbot",
+  "version": "4.2.0",
+  "description": "Finny 4.2 \u2013 Azure-authenticated accounting chatbot with Prompt 9.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.9.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "express-session": "^1.17.3",
+    "openai": "^4.28.5"
+  }
+}

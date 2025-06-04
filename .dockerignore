@@ -22,3 +22,5 @@ Thumbs.db
 # ── Build artefacts ───────────────────────────────
 dist/
 *.zip
+
+Dockerfile

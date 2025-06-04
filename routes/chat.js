@@ -58,6 +58,8 @@ router.post('/', requireAuth, async (req, res) => {
 
   try {
     // 2. OpenAI‑call ----------------------------------------------
+const { dumpPrompt } = require('../utils/logPrompt');
+    dumpPrompt(messages);
     const completion = await openai.chat.completions.create({
       model: MODEL,
       messages: [

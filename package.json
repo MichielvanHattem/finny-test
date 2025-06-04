@@ -1,14 +1,18 @@
 {
   "name": "finny-chatbot",
   "version": "4.5.0",
-  "type": "module",
-  "main": "src/index.js",
+  "description": "Finny Chatbot – prompt 9.3, logging, cleanup",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "express": "^4.19.2",
-    "body-parser": "^1.20.2",
+    "express-session": "^1.17.3",
+    "dotenv": "^16.4.5",
     "openai": "^4.27.0"
   }
 }

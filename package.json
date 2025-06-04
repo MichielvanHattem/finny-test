@@ -1,18 +1,16 @@
 {
   "name": "finny-chatbot",
-  "version": "4.5.0",
+  "version": "4.5.1",
   "description": "Finny Chatbot – prompt 9.3, logging, cleanup",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "dependencies": {
+    "@azure/msal-node": "1.18.4",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.17.3",
-    "dotenv": "^16.4.5",
     "openai": "^4.27.0"
   }
 }

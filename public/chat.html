@@ -1,45 +1,64 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <title>Finny 4.5 Chat</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:4rem auto;}
-    h1{color:#036;}
-    textarea{width:100%;height:140px;margin-bottom:1rem;}
-    button{padding:.6rem 1.2rem;font-size:1rem;}
-    pre{background:#f4f4f4;padding:1rem;border-radius:4px;white-space:pre-wrap;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:740px;margin:4rem auto}
+    h1{color:#0a356f}
+    textarea{width:100%;height:140px;margin:0 0 1rem}
+    button{padding:.6rem 1.4rem;font-size:1rem;border:0;border-radius:.4rem;background:#0a356f;color:#fff;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    pre{background:#f5f7fa;padding:1rem;border-radius:.4rem;white-space:pre-wrap;min-height:3rem}
   </style>
 </head>
 <body>
   <h1>Finny 4.5 Chat</h1>
+
   <form id="form">
     <textarea id="question" placeholder="Stel je vraag…"></textarea>
-    <button type="submit">Verstuur</button>
+    <button id="send" type="submit">Verstuur</button>
   </form>
+
   <h3>Antwoord:</h3>
   <pre id="out"></pre>
 
   <script>
-    const form = document.getElementById('form');
+    const form  = document.getElementById('form');
     const input = document.getElementById('question');
+    const send  = document.getElementById('send');
     const out   = document.getElementById('out');
 
-    form.onsubmit = async e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      out.textContent = '⏳ Bezig…';
-      try{
+      if (!input.value.trim()) return;
+
+      send.disabled = true;
+      out.textContent = '⏳ Bezig …';
+
+      try {
         const resp = await fetch('/chat', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ question: input.value })
+          method : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body   : JSON.stringify({
+            messages: [{ role: 'user', content: input.value.trim() }]
+          })
         });
+
+        if (resp.status === 401) {
+          // sessie verlopen → even herladen zodat OAuth opnieuw start
+          alert('Sessie verlopen – je wordt opnieuw aangemeld.');
+          return location.reload();
+        }
+
         const data = await resp.json();
-        out.textContent = data.answer || JSON.stringify(data);
-      }catch(err){
-        out.textContent = '⚠️ '+err.message;
+        out.textContent = data.answer || JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.textContent = `⚠️ ${err.message}`;
+      } finally {
+        send.disabled = false;
       }
-    };
+    });
   </script>
 </body>
 </html>

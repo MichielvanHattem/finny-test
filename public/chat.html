@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8"/>
+  <title>Finny 4.5 Chat</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:4rem auto;}
+    h1{color:#036;}
+    textarea{width:100%;height:140px;margin-bottom:1rem;}
+    button{padding:.6rem 1.2rem;font-size:1rem;}
+    pre{background:#f4f4f4;padding:1rem;border-radius:4px;white-space:pre-wrap;}
+  </style>
+</head>
+<body>
+  <h1>Finny 4.5 Chat</h1>
+  <form id="form">
+    <textarea id="question" placeholder="Stel je vraag…"></textarea>
+    <button type="submit">Verstuur</button>
+  </form>
+  <h3>Antwoord:</h3>
+  <pre id="out"></pre>
+
+  <script>
+    const form = document.getElementById('form');
+    const input = document.getElementById('question');
+    const out   = document.getElementById('out');
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      out.textContent = '⏳ Bezig…';
+      try{
+        const resp = await fetch('/chat', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ question: input.value })
+        });
+        const data = await resp.json();
+        out.textContent = data.answer || JSON.stringify(data);
+      }catch(err){
+        out.textContent = '⚠️ '+err.message;
+      }
+    };
+  </script>
+</body>
+</html>

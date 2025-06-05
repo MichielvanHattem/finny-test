@@ -1,7 +1,18 @@
-const router=require('express').Router();
-const {ConfidentialClientApplication}=require('@azure/msal-node');
-const msalConfig={auth:{clientId:process.env.AZURE_CLIENT_ID||'dummy',authority:process.env.AZURE_AUTHORITY||'https://login.microsoftonline.com/common',clientSecret:process.env.AZURE_CLIENT_SECRET||'secret'}};
-const cca=new ConfidentialClientApplication(msalConfig);
-router.get('/login',(req,res)=>{res.send('Login placeholder');});
-function requireAuth(req,res,next){next();}
-module.exports={router,requireAuth};
+// routes/auth.js
+const express = require('express');
+const path    = require('path');
+
+const router = express.Router();
+
+// ── Login-pagina ────────────────────────────────────────────────────────────
+router.get('/login', (_req, res) =>
+  res.sendFile(path.join(__dirname, '..', 'public', 'login.html'))
+);
+
+// ── Dummy-authorisatie (ongewijzigd) ─────────────────────────────────────────
+function requireAuth(req, res, next) {
+  if (req.session && req.session.user) return next();
+  return res.status(401).json({ error: 'unauthenticated' });
+}
+
+module.exports = { router, requireAuth };

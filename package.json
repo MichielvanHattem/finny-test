@@ -2,16 +2,14 @@
   "name": "finny-chatbot",
   "version": "4.5.2",
   "description": "Finny – ondernemen zonder boekhoud-stress",
-  
-
   "scripts": {
     "clean": "rimraf dist",
     "build": "echo \"skip build (JS project)\"",
     "start": "node index.js",
-    "dev":   "nodemon index.js"
+    "dev": "nodemon index.js"
   },
-
   "dependencies": {
+    "@azure/identity": "^4.10.0",
     "@azure/msal-node": "^2.14.2",
     "@microsoft/microsoft-graph-client": "^3.0.4",
     "dotenv": "^16.4.5",
@@ -19,7 +17,6 @@
     "express-session": "^1.17.3",
     "openai": "^4.27.0"
   },
-
   "devDependencies": {
     "nodemon": "^3.0.4",
     "rimraf": "^5.0.5"

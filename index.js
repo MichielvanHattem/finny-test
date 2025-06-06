@@ -1,11 +1,15 @@
-// index.js  – Finny 4.5 (Azure-auth, secure cookie, static UI)
+// index.js  – Finny 4.5.2 (Azure‑auth, secure cookie, static UI + SharePoint refresh)
 require('dotenv').config();
 const path     = require('path');
 const express  = require('express');
 const session  = require('express-session');
 
+// 👉  SharePoint helper (uit 4.0/4.1) – haalt bestanden uit de gekoppelde drive
+const { getFilesFromSharePoint } = require('./utils/sp');
+
 const { router: authRouter, requireAuth } = require('./routes/auth');
-const chatRoutes = require('./routes/chat');
+const chatRoutes   = require('./routes/chat');
+const refreshRoute = require('./routes/refresh');
 
 const app = express();
 app.set('trust proxy', 1);                            // Render/HTTPS aware
@@ -27,12 +31,13 @@ app.use(
 );
 
 /* ── Basis-routes ───────────────────────────────────────────────────────── */
-app.get('/ping', (_req, res) => res.send('pong'));           // health check
+app.get('/ping', (_req, res) => res.send('pong'));            // health check
 app.get('/',     (_req, res) => res.redirect('/auth/login')); // root→login
 
-app.use('/auth', authRouter);
-app.use('/chat', requireAuth, chatRoutes);
+app.use('/auth',  authRouter);
+app.use('/chat',  requireAuth, chatRoutes);
+app.use('/refresh', refreshRoute);     // <– nieuwe SP‑refresh‑endpoint
 
 /* ── Server start ───────────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Finny 4.5 live on :${PORT}`));
+app.listen(PORT, () => console.log(`Finny 4.5.2 live on :${PORT}`));

@@ -6,7 +6,7 @@ const session  = require('express-session');
 
 // 👉  SharePoint helper (uit 4.0/4.1) – haalt bestanden uit de gekoppelde drive
 const { getFilesFromSharePoint } = require('./utils/sp');
-
+const spRoutes = require('./routes/sharepointRoutes');
 const { router: authRouter, requireAuth } = require('./routes/auth');
 const chatRoutes   = require('./routes/chat');
 const refreshRoute = require('./routes/refresh');
@@ -33,7 +33,8 @@ app.use(
 /* ── Basis-routes ───────────────────────────────────────────────────────── */
 app.get('/ping', (_req, res) => res.send('pong'));            // health check
 app.get('/',     (_req, res) => res.redirect('/auth/login')); // root→login
-
+app.use('/sp', requireAuth, spRoutes);
+app.get('/', (_req,res)=> res.sendFile(path.join(__dirname,'public/index.html')));
 app.use('/auth',  authRouter);
 app.use('/chat',  requireAuth, chatRoutes);
 app.use('/refresh', refreshRoute);     // <– nieuwe SP‑refresh‑endpoint

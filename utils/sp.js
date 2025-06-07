@@ -1,23 +1,20 @@
-// utils/sp.js – eenvoudige helper om bestanden op te halen uit een SharePoint‑drive
-// Werkt met **client‑credential flow** (Application‑permissions)
-// ≈ 150 ms per call – geen /me endpoint ➜ geen delegated‑auth fout meer
+/**
+ * utils/sp.js – Graph-helpers (client-credential flow)
+ */
 
 const { Client } = require('@microsoft/microsoft-graph-client');
-require('isomorphic-fetch');
 const { ClientSecretCredential } = require('@azure/identity');
+require('isomorphic-fetch');
 
-// ❖ env‑vars – zie README / Render ENV
+/* ───── 0. ENV ───── */
 const {
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
   AZURE_CLIENT_SECRET,
-  SHAREPOINT_DRIVE_ID,               // b!IrRe6P6…
-  SHAREPOINT_SITE_HOST               // "vanhattemadvies.sharepoint.com"
+  SHAREPOINT_DRIVE_ID,      // b!IrRe6P6…  ← drive-ID van FinnyTest
 } = process.env;
 
-/**
- * Auth‑provider voor Graph v1.0
- */
+/* ───── 1. GRAPH CLIENT ───── */
 const credential   = new ClientSecretCredential(
   AZURE_TENANT_ID,
   AZURE_CLIENT_ID,
@@ -25,37 +22,49 @@ const credential   = new ClientSecretCredential(
 );
 
 const authProvider = {
-  getAccessToken: async () => {
-    const token = await credential.getToken('https://graph.microsoft.com/.default');
-    return token.token;
-  },
+  getAccessToken: async () =>
+    (await credential.getToken('https://graph.microsoft.com/.default')).token,
 };
 
 const graph = Client.initWithMiddleware({ authProvider });
 
-/**
- * Haal bestanden (metadata) op uit een SharePoint‑drive.
- * @param {string} driveId – GUID of b!‑ID
- * @param {string} folderPath – pad binnen de drive, "" = root
- * @returns {Promise<Array>} lijst van items (id, name, webUrl, lastModifiedDateTime)
- */
-async function listDriveItems(driveId, folderPath = '') {
-  const encoded = encodeURIComponent(folderPath);
-  const endpoint = folderPath ?
-    `/drives/${driveId}/root:/${encoded}:/children` :
-    `/drives/${driveId}/root/children`;
+/* ───── 2. LIST ITEMS ───── */
+async function listDriveItems(driveId = SHAREPOINT_DRIVE_ID, folderPath = '') {
+  const encoded  = encodeURIComponent(folderPath);
+  const endpoint = folderPath
+    ? `/drives/${driveId}/root:/${encoded}:/children`
+    : `/drives/${driveId}/root/children`;
+
   const res = await graph.api(endpoint)
-    .select('id,name,lastModifiedDateTime,webUrl')
+    .select('id,name,lastModifiedDateTime,webUrl,size')
     .top(999)
     .get();
+
   return res.value || [];
 }
 
-/**
- * Convenience: haalt alles op uit de default‑drive en map "Gedeelde documenten".
- */
-async function getFilesFromSharePoint(folder = 'Gedeelde documenten', driveId = SHAREPOINT_DRIVE_ID) {
+/* ───── 3. DOWNLOAD FILE (nieuw) ───── */
+async function downloadFile(folder = 'Gedeelde documenten', name, driveId = SHAREPOINT_DRIVE_ID) {
+  // 3a. lookup item-id (Graph heeft geen direct path-download endpoint)
+  const encoded = encodeURIComponent(`${folder}/${name}`);
+  const item = await graph.api(`/drives/${driveId}/root:/${encoded}`).get();
+
+  // 3b. download binary content
+  return graph
+    .api(`/drives/${driveId}/items/${item.id}/content`)
+    .get();                        // geeft Buffer terug
+}
+
+/* ───── 4. ALIASES ───── */
+async function getFilesFromSharePoint(
+  folder = 'Gedeelde documenten',
+  driveId = SHAREPOINT_DRIVE_ID,
+) {
   return listDriveItems(driveId, folder);
 }
 
-module.exports = { listDriveItems, getFilesFromSharePoint };
+module.exports = {
+  listDriveItems,
+  getFilesFromSharePoint,
+  downloadFile,                    // ← export nieuw
+};

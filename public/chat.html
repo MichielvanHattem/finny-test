@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Finny 4.5 Chat</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://finny-chatbot.onrender.com;">
   <style>
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:740px;margin:4rem auto}
     h1{color:#0a356f}
@@ -46,7 +47,6 @@
         });
 
         if (resp.status === 401) {
-          // sessie verlopen → even herladen zodat OAuth opnieuw start
           alert('Sessie verlopen – je wordt opnieuw aangemeld.');
           return location.reload();
         }

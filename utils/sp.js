@@ -1,70 +1,54 @@
-/**
- * utils/sp.js – Graph-helpers (client-credential flow)
- */
-
 const { Client } = require('@microsoft/microsoft-graph-client');
-const { ClientSecretCredential } = require('@azure/identity');
 require('isomorphic-fetch');
 
-/* ───── 0. ENV ───── */
-const {
-  AZURE_TENANT_ID,
-  AZURE_CLIENT_ID,
-  AZURE_CLIENT_SECRET,
-  SHAREPOINT_DRIVE_ID,      // b!IrRe6P6…  ← drive-ID van FinnyTest
-} = process.env;
+async function getAppToken() {
+    const { ConfidentialClientApplication } = require('@azure/msal-node');
 
-/* ───── 1. GRAPH CLIENT ───── */
-const credential   = new ClientSecretCredential(
-  AZURE_TENANT_ID,
-  AZURE_CLIENT_ID,
-  AZURE_CLIENT_SECRET,
-);
+    const config = {
+        auth: {
+            clientId: process.env.AZURE_CLIENT_ID,
+            authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}`,
+            clientSecret: process.env.AZURE_CLIENT_SECRET
+        }
+    };
 
-const authProvider = {
-  getAccessToken: async () =>
-    (await credential.getToken('https://graph.microsoft.com/.default')).token,
-};
+    const cca = new ConfidentialClientApplication(config);
 
-const graph = Client.initWithMiddleware({ authProvider });
+    const tokenRequest = {
+        scopes: ["https://graph.microsoft.com/.default"],
+    };
 
-/* ───── 2. LIST ITEMS ───── */
-async function listDriveItems(driveId = SHAREPOINT_DRIVE_ID, folderPath = '') {
-  const encoded  = encodeURIComponent(folderPath);
-  const endpoint = folderPath
-    ? `/drives/${driveId}/root:/${encoded}:/children`
-    : `/drives/${driveId}/root/children`;
-
-  const res = await graph.api(endpoint)
-    .select('id,name,lastModifiedDateTime,webUrl,size')
-    .top(999)
-    .get();
-
-  return res.value || [];
+    try {
+        const response = await cca.acquireTokenByClientCredential(tokenRequest);
+        return response.accessToken;
+    } catch (error) {
+        console.error("Token ophalen mislukt", error);
+        throw new Error("Token ophalen mislukt");
+    }
 }
 
-/* ───── 3. DOWNLOAD FILE (nieuw) ───── */
-async function downloadFile(folder = 'Gedeelde documenten', name, driveId = SHAREPOINT_DRIVE_ID) {
-  // 3a. lookup item-id (Graph heeft geen direct path-download endpoint)
-  const encoded = encodeURIComponent(`${folder}/${name}`);
-  const item = await graph.api(`/drives/${driveId}/root:/${encoded}`).get();
-
-  // 3b. download binary content
-  return graph
-    .api(`/drives/${driveId}/items/${item.id}/content`)
-    .get();                        // geeft Buffer terug
+async function getGraphClient() {
+    const token = await getAppToken();
+    return Client.init({
+        authProvider: (done) => {
+            done(null, token);
+        }
+    });
 }
 
-/* ───── 4. ALIASES ───── */
-async function getFilesFromSharePoint(
-  folder = 'Gedeelde documenten',
-  driveId = SHAREPOINT_DRIVE_ID,
-) {
-  return listDriveItems(driveId, folder);
+async function getSharePointFiles() {
+    const graphClient = await getGraphClient();
+
+    try {
+        const result = await graphClient
+            .api('/me/drive/root:/FinnyTest:/children')
+            .get();
+
+        return result.value;
+    } catch (error) {
+        console.error("Graph API-fout:", error);
+        throw error;
+    }
 }
 
-module.exports = {
-  listDriveItems,
-  getFilesFromSharePoint,
-  downloadFile,                    // ← export nieuw
-};
+module.exports = { getSharePointFiles };

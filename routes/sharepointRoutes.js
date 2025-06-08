@@ -1,7 +1,6 @@
 const express = require('express');
-const graphClientFactory = require('../graphClient');
-
 const router = express.Router();
+const { getSharePointFiles } = require('../utils/sp');
 
 /* middleware – check login */
 function requireAuth(req, res, next){
@@ -9,18 +8,12 @@ function requireAuth(req, res, next){
   next();
 }
 
-/* nette tabel-view i.p.v. rauwe JSON */
+/* nette tabel-view van SharePoint-bestanden */
 router.get('/files', requireAuth, async (req,res)=>{
   try{
-    const g      = graphClientFactory(req.session.user.accessToken);
-    const siteId = process.env.SHAREPOINT_SITE_ID;
-    const items  = await g
-      .api(`/sites/${siteId}/drive/root/children`)
-      .select('id,name,lastModifiedDateTime,webUrl,size')
-      .top(40)
-      .get();
+    const items = await getSharePointFiles();
 
-    const rows = items.value.map(f=>`
+    const rows = items.map(f=>`
       <tr>
         <td><a href="${f.webUrl}" target="_blank">${f.name}</a></td>
         <td>${(f.size/1024).toFixed(1)} KB</td>

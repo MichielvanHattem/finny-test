@@ -8,10 +8,10 @@ function requireAuth(req, res, next){
   next();
 }
 
-/* nette tabel-view van SharePoint-bestanden */
+/* Nette tabel-view van SharePoint-bestanden */
 router.get('/files', requireAuth, async (req,res)=>{
   try{
-    const items = await getSharePointFiles();
+    const items = await getSharePointFiles(req.session.user.accessToken);
 
     const rows = items.map(f=>`
       <tr>

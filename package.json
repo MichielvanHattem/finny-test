@@ -1,12 +1,12 @@
 {
   "name": "finny-chatbot",
-  "version": "4.5.2",
+  "version": "4.6.0",
   "description": "Finny – ondernemen zonder boekhoud-stress",
   "scripts": {
     "clean": "rimraf dist",
     "build": "echo \"skip build (JS project)\"",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "@azure/identity": "^4.10.0",

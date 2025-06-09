@@ -1,28 +1,17 @@
 const express = require('express');
-const app = express();
+const path = require('path');
 const authMiddleware = require('./middleware/authMiddleware');
 const spFilesRoute = require('./routes/sp-files');
-
-// Nodig om environment-variabelen uit .env te lezen
 require('dotenv').config();
-
-// Nodig voor Azure OAuth afhandeling
 const { ConfidentialClientApplication } = require('@azure/msal-node');
 
+const app = express();
+
+// JSON & Static files middleware
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware voor statische bestanden
-app.use(express.static('public'));
-
-// SP-bestanden route met authenticatie
-app.use('/sp-files', authMiddleware, spFilesRoute);
-
-// Homepage route
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
-
-// MSAL configuratie voor Azure AD OAuth
+// MSAL configuratie
 const msalConfig = {
   auth: {
     clientId: process.env.AZURE_CLIENT_ID,
@@ -30,10 +19,14 @@ const msalConfig = {
     clientSecret: process.env.AZURE_CLIENT_SECRET,
   },
 };
-
 const msalInstance = new ConfidentialClientApplication(msalConfig);
 
-// Inloggen via Azure AD route
+// 🌐 Homepage route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 🔑 Azure AD login route
 app.get('/auth/login', async (req, res) => {
   const authCodeUrlParameters = {
     scopes: ["user.read"],
@@ -44,12 +37,12 @@ app.get('/auth/login', async (req, res) => {
     const authUrl = await msalInstance.getAuthCodeUrl(authCodeUrlParameters);
     res.redirect(authUrl);
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).send('Login fout opgetreden.');
+    console.error('Login fout:', error);
+    res.status(500).send('Azure AD login fout.');
   }
 });
 
-// OAuth callback route
+// 🔒 Azure AD callback route
 app.get('/auth/redirect', async (req, res) => {
   const tokenRequest = {
     code: req.query.code,
@@ -59,17 +52,23 @@ app.get('/auth/redirect', async (req, res) => {
 
   try {
     const response = await msalInstance.acquireTokenByCode(tokenRequest);
-    console.log('OAuth token response:', response);
-
-    // Hier regel je verdere sessiebeheer of JWT-token uitgifte
+    console.log('Token response:', response);
     res.send('Azure AD Login succesvol!');
   } catch (error) {
-    console.error('OAuth callback error:', error);
-    res.status(500).send('OAuth callback fout opgetreden.');
+    console.error('OAuth callback fout:', error);
+    res.status(500).send('OAuth callback fout.');
   }
 });
 
-// Server starten
+// 📁 SharePoint-bestanden route (eerder /sp/files genoemd)
+app.use('/sp/files', authMiddleware, spFilesRoute);
+
+// 💬 Chat route
+app.get('/chat', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chat.html'));
+});
+
+// 🖥️ Server starten
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server draait foutloos op poort ${PORT}`);

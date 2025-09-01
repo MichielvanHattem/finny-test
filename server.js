@@ -29,7 +29,8 @@ if (fs.existsSync(path.join(__dirname,'public'))) {
 try { app.use('/sp', require('./routes/sp')); } catch(_) {}
 
 app.get('/', (_req,res)=>res.type('html').send(`
-<html><body style="font-family:system-ui;max-width:900px;margin:32px auto">
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Finny 4.8.1</title></head><body style="font-family:system-ui;max-width:900px;margin:32px auto">
   <h2>Finny ${VERSION} (local backup)</h2>
   <p style="color:#555">Commit: ${COMMIT}</p>
   <p>Prompt: <code>${promptInfo.file}</code> ${promptInfo.ok?`(#${promptInfo.hash})`:`(❌ ${promptInfo.error})`}</p>
